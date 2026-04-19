@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent"
+version = "0.1.0"
+description = "CSE476 final project"
+authors = [
+    {name = "Vihaan Patel", email = "vihaan004@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "langchain>=1.2.15",
+    "langchain-openai>=1.1.14",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+generate-answers = "generate_answers:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["generate_answers"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
