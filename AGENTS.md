@@ -1,1 +1,0 @@
-This project is part of an assignment for CSE 476 course at ASU. The requirements and deliverables for the project are outlined in final_project_tutorial.ipynb. Read this to get context about the project goals before any task. 
