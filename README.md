@@ -4,9 +4,8 @@ This repository contains our modular inference-time agent. Built with [LangChain
 
 ## Current Structure
 - batch answer generator (entry point): `src/generate_answers.py`
-- shared model/env client: `src/agent/client.py`
-- strategy router: `src/agent/router.py`
-- strategy implementations: `src/agent/graphs/`
+- agent loop: `src/agent/graph.py`
+- tool definitions: `src/agent/tools.py`
 - data: `data/` (input and output .json files)
 
 ## Setup
@@ -20,8 +19,8 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 python -m pip install -e .
 ```
 3. create `.env` from `.env.example` and set values:
-- `LLM_API_KEY` (required)
-- `BASE_URL`
+- `OPENAI_API_KEY` (or `LLM_API_KEY`) (required)
+- `API_BASE` (or `BASE_URL`) (optional)
 - `MODEL_NAME`
 - `TEMPERATURE`
 
@@ -32,15 +31,15 @@ from project root:
 ```bash
 generate-answers
 ```
-OR from `src/`:
+OR without installing (from project root):
 ```bash
-python generate_answers.py
+python src/generate_answers.py
 ```
 
-## Add New Inference Techniques (graphs)
-1. add a new class under `src/agent/graphs/` (example: `cot.py`).
-2. use the `BaseGraph` interface (see `direct.py` for example).
-3. register it in `src/agent/router.py` inside `REGISTRY`.
+## Add New Inference Techniques
+implement inference-time techniques in `src/agent/graph.py` (the `invoke_agent()` entrypoint).
+
+define tools in `src/agent/tools.py` and pass them into `create_agent(..., tools=[...])`.
 
 ## TODO
 - implement remaining strats
