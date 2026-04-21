@@ -14,13 +14,18 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any, Dict, List
-from agent.router import invoke_agent
+from agent.graph import invoke_agent
 
 ROOT = Path(__file__).resolve().parent.parent
+
 INPUT_PATH = ROOT / "data" / "input" / "smoke.json"                                 # for sanity
+OUTPUT_PATH = ROOT / "data" / "output" / "smoke.json"
+
 # INPUT_PATH = ROOT / "data" / "input" / "cse_476_final_project_dev_data.json"      # for development
+# OUTPUT_PATH = ROOT / "data" / "output" / "cse_476_final_project_answers.json"
+
 # INPUT_PATH = ROOT / "data" / "input" / "cse_476_final_project_test_data.json"     # for evaluation
-OUTPUT_PATH = ROOT / "data" / "output" / "cse_476_final_project_answers.json"
+# OUTPUT_PATH = ROOT / "data" / "output" / "cse_476_final_project_answers.json"
 
 def load_questions(path: Path) -> List[Dict[str, Any]]:
     with path.open("r") as fp:

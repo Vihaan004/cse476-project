@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 import os
-from functools import lru_cache
 from pathlib import Path
 
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
+from langchain.agents import create_agent
+from langchain_core.messages import AIMessage
 
 
 ROOT = Path(__file__).resolve().parents[2]
 load_dotenv(ROOT / ".env")
-
 
 def _env(name: str, *aliases: str, default: str | None = None) -> str | None:
     value = os.getenv(name)
@@ -22,13 +22,26 @@ def _env(name: str, *aliases: str, default: str | None = None) -> str | None:
             return value
     return default
 
-
-@lru_cache(maxsize=1)
-def get_model() -> ChatOpenAI:
-    """Build and cache one shared chat model instance for all strategies."""
-    return ChatOpenAI(
+def invoke_agent(question: str) -> str:
+    client = ChatOpenAI(
         base_url=_env("API_BASE", "BASE_URL", default="https://openai.rc.asu.edu/v1"),
         api_key=_env("OPENAI_API_KEY", "LLM_API_KEY"),
         model=_env("MODEL_NAME", default="qwen3-30b-a3b-instruct-2507"),
         temperature=float(_env("TEMPERATURE", default="0.4")),
     )
+
+    agent = create_agent(
+        model=client,
+        tools=[],
+        system_prompt="You are a concise assistant. Return ONLY the final answer.",
+    )
+
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": question}]}
+    )
+    
+    print(f"=== API RESPONSE === \n {result}")  # debug
+    for message in reversed(result.get("messages", [])):
+        if isinstance(message, AIMessage):
+            return str(message.content).strip()
+    return "ERROR: Invalid Response."
