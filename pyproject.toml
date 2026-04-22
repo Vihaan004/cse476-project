@@ -19,6 +19,7 @@ dependencies = [
 
 [project.scripts]
 generate-answers = "generate_answers:main"
+evaluate-answers = "evaluate_answers:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

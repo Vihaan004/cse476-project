@@ -4,7 +4,8 @@
 
 # data
 data/input/smoke.json
-data/output/smoke.json
+data/input/dev.json
+data/output/
 
 # cache
 __pycache__/

@@ -45,4 +45,3 @@ define tools in `src/agent/tools.py` and pass them into `create_agent(..., tools
 - implement remaining strats
 - config options for strats (config class)
 - guardrails and validation (api calls < 20, response length, etc.)
-- evaluation framework (optional)

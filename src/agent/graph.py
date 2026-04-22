@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
 from langchain_core.messages import AIMessage
+from agent.tools import calculator
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -32,7 +33,7 @@ def invoke_agent(question: str) -> str:
 
     agent = create_agent(
         model=client,
-        tools=[],
+        tools=[calculator],
         system_prompt="You are a concise assistant. Return ONLY the final answer.",
     )
 
