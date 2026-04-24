@@ -11,6 +11,7 @@ an answers JSON file where each entry contains a string under the "output" key.
 
 from __future__ import annotations
 
+from importlib.resources import path
 import json
 from pathlib import Path
 from typing import Any, Dict, List
@@ -21,14 +22,14 @@ ROOT = Path(__file__).resolve().parent.parent
 # INPUT_PATH = ROOT / "data" / "input" / "smoke.json"                                 # for sanity
 # OUTPUT_PATH = ROOT / "data" / "output" / "smoke.json"
 
-INPUT_PATH = ROOT / "data" / "input" / "dev.json"      # for development
+INPUT_PATH = ROOT / "data" / "input" / "cse_476_final_project_dev_data.json"      # for development
 OUTPUT_PATH = ROOT / "data" / "output" / "dev.json"
 
 # INPUT_PATH = ROOT / "data" / "input" / "cse_476_final_project_test_data.json"     # for evaluation
 # OUTPUT_PATH = ROOT / "data" / "output" / "cse_476_final_project_answers.json"
 
 def load_questions(path: Path) -> List[Dict[str, Any]]:
-    with path.open("r") as fp:
+    with path.open("r", encoding="utf-8") as fp:
         data = json.load(fp)
     if not isinstance(data, list):
         raise ValueError("Input file must contain a list of question objects.")
@@ -37,7 +38,7 @@ def load_questions(path: Path) -> List[Dict[str, Any]]:
 
 def build_answers(questions: List[Dict[str, Any]]) -> List[Dict[str, str]]:
     answers = []
-    limit = 5  # Temporary hardcoded limit
+    limit = 20  # Temporary hardcoded limit
     for idx, question in enumerate(questions[:limit], start=1):
         # Example: assume you have an agent loop that produces an answer string.
         real_answer = invoke_agent(question["input"])
@@ -72,10 +73,10 @@ def main() -> None:
     questions = load_questions(INPUT_PATH)
     answers = build_answers(questions)
 
-    with OUTPUT_PATH.open("w") as fp:
+    with OUTPUT_PATH.open("w", encoding="utf-8") as fp:
         json.dump(answers, fp, ensure_ascii=False, indent=2)
 
-    with OUTPUT_PATH.open("r") as fp:
+    with OUTPUT_PATH.open("r", encoding="utf-8") as fp:
         saved_answers = json.load(fp)
     validate_results(questions, saved_answers)
     print(

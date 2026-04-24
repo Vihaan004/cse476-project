@@ -1,6 +1,6 @@
 # CSE476 Final Project
 
-This repository contains our modular inference-time agent. Built with [LangChain](https://docs.langchain.com/).
+This repository contains our modular inference-time agent.
 
 ## Current Structure
 - batch answer generator (entry point): `src/generate_answers.py`
@@ -39,7 +39,7 @@ python src/generate_answers.py
 ## Add New Inference Techniques
 implement inference-time techniques in `src/agent/graph.py` (the `invoke_agent()` entrypoint).
 
-define tools in `src/agent/tools.py` and pass them into `create_agent(..., tools=[...])`.
+define tools in `src/agent/tools.py` and call them from the agent implementation as needed.
 
 ## TODO
 - implement remaining strats
