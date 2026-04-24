@@ -1,2 +1,2 @@
 def calculator(expression: str) -> str:
-    return "0"
+    return str(eval(expression))

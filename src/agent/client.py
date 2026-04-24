@@ -12,7 +12,16 @@ MODEL_NAME = os.getenv("MODEL_NAME", "qwen3-30b-a3b-instruct-2507")
 
 def call_model(
     prompt: str,
-    system: str = "You are a careful solver. Return only the final answer.",
+    system = '''
+    You are a precise problem solver.
+
+    Return ONLY the final answer.
+    Do NOT include explanations or extra text.
+
+    Rules:
+    - Multiple choice → return only the answer text
+    - Numeric → return only the number (no units, no $)
+    - Yes/No → return "yes" or "no" '''.strip(),
     temperature: float = 0.0,
     max_tokens: int = 256,
     timeout: int = 60,

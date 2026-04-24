@@ -1,15 +1,11 @@
 from agent.client import call_model
+from agent.normalize_answer import normalize_answer
 
 
 def invoke_agent(question: str) -> str:
     prompt = f"""
-Answer the following question.
+    Solve the following problem according to your given instructions. 
+    Dont include any explanations or reasoning steps, just return the final accurate answer.  
+    Question:{question}""".strip()
 
-Return only the final answer.
-Do not include reasoning, explanation, or extra text.
-
-Question:
-{question}
-""".strip()
-
-    return call_model(prompt)
+    return normalize_answer(call_model(prompt), question)

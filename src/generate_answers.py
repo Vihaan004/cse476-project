@@ -38,7 +38,7 @@ def load_questions(path: Path) -> List[Dict[str, Any]]:
 
 def build_answers(questions: List[Dict[str, Any]]) -> List[Dict[str, str]]:
     answers = []
-    limit = 20  # Temporary hardcoded limit
+    limit = 25  # Temporary hardcoded limit
     for idx, question in enumerate(questions[:limit], start=1):
         # Example: assume you have an agent loop that produces an answer string.
         real_answer = invoke_agent(question["input"])
@@ -70,7 +70,7 @@ def validate_results(
 
 
 def main() -> None:
-    questions = load_questions(INPUT_PATH)
+    questions = load_questions(INPUT_PATH)[:25]  # Temporary hardcoded limit for testing
     answers = build_answers(questions)
 
     with OUTPUT_PATH.open("w", encoding="utf-8") as fp:
