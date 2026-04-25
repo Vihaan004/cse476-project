@@ -2,6 +2,13 @@ from agent.client import call_model
 from agent.normalize_answer import normalize_answer
 from agent.call_counter import CallCounter
 from agent.router import route_question
+from agent.tools import calculator
+
+Arithmetic_keywords = (
+    "sold", "bought", "saved", "cost", "earned", "commission",
+    "percent", "week", "weeks", "pounds", "dollars", "each",
+    "split", "bill", "twice", "half",
+)
 
 
 PROMPTS = {
@@ -57,6 +64,35 @@ def budgeted_call(prompt: str, budget: CallCounter, **kwargs) -> str | None:
 
     return call_model(prompt, **kwargs)
 
+
+def looks_arithmetic(question: str) -> bool:
+    q = question.lower()
+    return any(hint in q for hint in Arithmetic_keywords) and any(ch.isdigit() for ch in q)
+
+
+def expression_prompt(question: str) -> str:
+    return f"""
+    Convert this arithmetic word problem into one Python arithmetic expression.
+    Return only the expression. Do not include words, units, or explanation.
+    Question:{question}""".strip()
+
+
+def tool_augmented_math(question: str, budget: CallCounter) -> str:
+    if not looks_arithmetic(question):
+        return ""
+
+    raw = budgeted_call(expression_prompt(question), budget, temperature=0.0, max_tokens=96)
+    expression = str(raw or "").strip().strip("`")
+    if not expression:
+        return ""
+    expression = expression.splitlines()[-1].strip()
+
+    try:
+        return calculator(expression)
+    except Exception:
+        return ""
+
+
 def verifier_prompt(question: str, route: str, first: str, second: str) -> str:
     instruction = PROMPTS.get(route, PROMPTS["general"])
     return f"""
@@ -106,4 +142,8 @@ def self_consistency(question: str, route: str, budget: CallCounter) -> str:
 def invoke_agent(question: str) -> str:
     budget = CallCounter(max_calls=20)
     route = route_question(question)
+    if route == "math":
+        tool_answer = tool_augmented_math(question, budget)
+        if tool_answer:
+            return tool_answer
     return self_consistency(question, route, budget)
