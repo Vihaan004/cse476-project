@@ -31,14 +31,18 @@ PROMPTS = {
     ),
     "coding": (
         "You are an expert Python developer. "
-        "Return only the requested self-contained code body. "
-        "Do not include markdown, comments outside the code, or explanation."
+        "Use the exact imports, function name, parameters, column names, and constants from the prompt. "
+        "Return only the code that belongs after the provided starter code. "
+        "Do not include markdown fences or explanation."
     ),
     "planning": (
         "Generate a valid plan for the final planning problem. "
-        "Return only the action list in the required parenthesized format. "
+        "Use the compact parenthesized action format shown in the examples. "
+        "Use one action per line. "
+        "Do not use articles like 'the' or full natural-language action names. "
         "Do not include explanation."
     ),
+
     "future_prediction": (
         "Make the requested prediction. "
         "Preserve the exact required final format, especially boxed answers. "
@@ -197,7 +201,7 @@ def invoke_agent(question: str) -> str:
             return tool_answer
         answer = self_consistency(question, route, budget)
 
-    elif route in {"coding", "planning", "future_prediction"}:
+    elif route in {"coding", "planning", "future_prediction", "general"}:
         answer = single_pass(question, route, budget)
 
     else:

@@ -1,14 +1,28 @@
 import re
 
 NUMBERS = re.compile(r"[-+]?\d[\d,]*(?:\.\d+)?")
-PREFIX = re.compile(
-    r"^\s*(?:final answer|answer|the answer is|therefore|thus|result|hence)\s*[:\-]?\s*",
-    re.IGNORECASE,
-)
+PREFIX = re.compile(r"^\s*(?:final answer|answer|the answer is|therefore|thus|result|hence)\s*[:\-]?\s*", re.IGNORECASE)
 
 def normalize_answer(answer: str, question: str = "", route: str = "general") -> str:
     text = str(answer or "").strip()
 
+    if route == "coding":
+        text = re.sub(r"^```(?:python)?\s*", "", text, flags=re.IGNORECASE)
+        text = re.sub(r"\s*```$", "", text)
+        return text.strip()
+
+    if route == "planning":
+        text = re.sub(r"^```(?:text)?\s*", "", text, flags=re.IGNORECASE)
+        text = re.sub(r"\s*```$", "", text)
+        return text.strip()
+
+    if route == "future_prediction":
+        boxed = re.search(r"\\boxed\{.*?\}", text)
+        if boxed:
+            return boxed.group(0)
+        return text.strip()
+
+    # only short-answer routes use last-line cleanup
     lines = [line.strip() for line in text.splitlines() if line.strip()]
     if lines:
         text = lines[-1]
