@@ -26,4 +26,4 @@ def route_question(question: str) -> str:
     ]):
         return "math"
 
-    return "general"
+    return "common_sense"
