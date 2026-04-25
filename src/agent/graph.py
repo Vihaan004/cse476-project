@@ -4,6 +4,8 @@ from agent.call_counter import CallCounter
 from agent.router import route_question
 from agent.tools import calculator
 
+BAD_PREFIXES = ("since", "then", "so,", "we can", "therefore", "because", "let ")
+
 Arithmetic_keywords = (
     "sold", "bought", "saved", "cost", "earned", "commission",
     "percent", "week", "weeks", "pounds", "dollars", "each",
@@ -116,6 +118,43 @@ def verify_answer(question: str, route: str, first: str, second: str, budget: Ca
     return normalize_answer(raw, question, route) or first
 
 
+def retry_prompt(question: str, route: str, bad_answer: str) -> str:
+    instruction = PROMPTS.get(route, PROMPTS["general"])
+    return f"""
+    {instruction}
+    The previous answer was invalid or incomplete: {bad_answer}
+    Return only the final answer in the required format.
+    Do not include reasoning, equations, labels, or explanation.
+    Question:{question}""".strip()
+
+
+def is_malformed(answer: str, route: str) -> bool:
+    text = str(answer or "").strip()
+    low = text.lower()
+    if not text:
+        return True
+    if low.startswith(BAD_PREFIXES):
+        return True
+    if route == "math" and not any(ch.isdigit() for ch in text):
+        return True
+    if route == "yes_no" and low not in {"yes", "no"}:
+        return True
+    if route == "future_prediction" and "\\boxed{" not in text:
+        return True
+    if route in {"coding", "planning"} and len(text) < 10:
+        return True
+    return False
+
+
+def fallback_retry(question: str, route: str, bad_answer: str, budget: CallCounter) -> str:
+    raw = budgeted_call(
+        retry_prompt(question, route, bad_answer),
+        budget,
+        temperature=0.0,
+    )
+    return normalize_answer(raw, question, route)
+
+
 def self_consistency(question: str, route: str, budget: CallCounter) -> str:
     first_raw = budgeted_call(
         hidden_cot_prompt(question, route),
@@ -139,11 +178,33 @@ def self_consistency(question: str, route: str, budget: CallCounter) -> str:
 
     return first_answer or second_answer
 
+def single_pass(question: str, route: str, budget: CallCounter) -> str:
+    raw = budgeted_call(
+        hidden_cot_prompt(question, route),
+        budget,
+        temperature=0.0,
+    )
+    return normalize_answer(raw, question, route)
+
+
 def invoke_agent(question: str) -> str:
     budget = CallCounter(max_calls=20)
     route = route_question(question)
+
     if route == "math":
         tool_answer = tool_augmented_math(question, budget)
         if tool_answer:
             return tool_answer
-    return self_consistency(question, route, budget)
+        answer = self_consistency(question, route, budget)
+
+    elif route in {"coding", "planning", "future_prediction"}:
+        answer = single_pass(question, route, budget)
+
+    else:
+        answer = self_consistency(question, route, budget)
+
+    if is_malformed(answer, route):
+        return fallback_retry(question, route, answer, budget) or answer
+
+    return answer
+
