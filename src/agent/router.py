@@ -11,6 +11,12 @@ def route_question(question: str) -> str:
 
     if "predict future events" in q or "\\boxed" in q:
         return "future_prediction"
+    
+    if "context:" in q or "facts:" in q or "[doc]" in q or "[par]" in q:
+        return "context_qa"
+
+    if len(question) > 700 and q.startswith(("who", "what", "which", "where", "when", "how")):
+        return "context_qa"
 
     if re.search(r"\([A-D]\)|\b[A-D]\.", question):
         return "mcq"

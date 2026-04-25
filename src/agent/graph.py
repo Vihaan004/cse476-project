@@ -36,11 +36,15 @@ PROMPTS = {
         "Do not include markdown fences or explanation."
     ),
     "planning": (
-        "Generate a valid plan for the final planning problem. "
-        "Use the compact parenthesized action format shown in the examples. "
+        "Return only the final plan. "
         "Use one action per line. "
-        "Do not use articles like 'the' or full natural-language action names. "
-        "Do not include explanation."
+        "Every action must be wrapped in parentheses. "
+        "Use compact symbolic action syntax from the prompt, not natural language. "
+        "Use hyphenated action names where shown, like pick-up, put-down, load-truck, and fly-airplane. "
+        "Abbreviate objects exactly as in examples: package_2 as p2, truck_0 as t0, airplane_1 as a1, "
+        "location_0_1 as l0-1, city_2 as c2, object_9 as o9, and object a as a. "
+        "Do not include [PLAN], [PLAN END], explanation, numbering, bullets, or markdown. "
+        "Example output line: (unstack blue yellow)"
     ),
 
     "future_prediction": (
