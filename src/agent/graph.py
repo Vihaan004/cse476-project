@@ -15,9 +15,9 @@ Arithmetic_keywords = (
 
 PROMPTS = {
     "math": (
-        "Think through the solution privately. "
-        "Do not write reasoning, equations, or explanation. "
-        "Return only the final numeric answer."
+        "Solve the problem carefully. "
+        "You may use reasoning and equations in your response. "
+        "End with exactly one line: Final answer: <answer>."
     ),
     "mcq": (
         "Think through each option privately. "
@@ -64,6 +64,25 @@ def hidden_cot_prompt(question: str, route: str, attempt: str = "initial") -> st
     Question:{question}""".strip()
 
 
+def decomposition_prompt(question: str) -> str:
+    return f"""
+    Decompose this math problem privately into the needed smaller facts.
+    Solve each part privately and combine them.
+    Do not show the decomposition, reasoning, equations, labels, or explanation.
+    Return only the final numeric answer.
+    Question:{question}""".strip()
+
+
+def tree_of_thought_prompt(question: str) -> str:
+    return f"""
+    Explore three private solution approaches for this math problem:
+    algebraic, structural/geometric, and casework/counting.
+    Compare the approaches privately and keep the most consistent result.
+    Do not show any reasoning, equations, labels, or explanation.
+    Return only the final numeric answer.
+    Question:{question}""".strip()
+
+
 def budgeted_call(prompt: str, budget: CallCounter, **kwargs) -> str | None:
     if not budget.record():
         return None
@@ -87,7 +106,7 @@ def tool_augmented_math(question: str, budget: CallCounter) -> str:
     if not looks_arithmetic(question):
         return ""
 
-    raw = budgeted_call(expression_prompt(question), budget, temperature=0.0, max_tokens=96)
+    raw = budgeted_call(expression_prompt(question), budget, temperature=0.0)
     expression = str(raw or "").strip().strip("`")
     if not expression:
         return ""
@@ -120,6 +139,28 @@ def verify_answer(question: str, route: str, first: str, second: str, budget: Ca
         temperature=0.0,
     )
     return normalize_answer(raw, question, route) or first
+
+
+def verify_candidates(question: str, route: str, candidates: list[str], budget: CallCounter) -> str:
+    candidate_text = "\n".join(
+        f"Candidate {idx + 1}: {candidate}" for idx, candidate in enumerate(candidates)
+    )
+    raw = budgeted_call(
+        f"""
+        {PROMPTS.get(route, PROMPTS["general"])}
+        Choose the most likely correct candidate answer.
+        Return only the selected final answer.
+        Question:{question}
+        {candidate_text}""".strip(),
+        budget,
+        temperature=0.0,
+    )
+    return normalize_answer(raw, question, route) or candidates[0]
+
+
+def tree_of_thought_math(question: str, budget: CallCounter) -> str:
+    raw = budgeted_call(tree_of_thought_prompt(question), budget, temperature=0.3)
+    return normalize_answer(raw, question, "math")
 
 
 def retry_prompt(question: str, route: str, bad_answer: str) -> str:
@@ -167,17 +208,24 @@ def self_consistency(question: str, route: str, budget: CallCounter) -> str:
     )
     first_answer = normalize_answer(first_raw, question, route)
 
-    second_raw = budgeted_call(
-        hidden_cot_prompt(question, route, "independent check"),
-        budget,
-        temperature=0.2,
+    second_prompt = decomposition_prompt(question) if route == "math" else hidden_cot_prompt(
+        question,
+        route,
+        "independent check",
     )
+    second_raw = budgeted_call(second_prompt, budget, temperature=0.2)
     second_answer = normalize_answer(second_raw, question, route)
 
     if first_answer and first_answer == second_answer:
         return first_answer
     
     if first_answer and second_answer:
+        if route == "math":
+            tree_answer = tree_of_thought_math(question, budget)
+            candidates = [first_answer, second_answer]
+            if tree_answer:
+                candidates.append(tree_answer)
+            return verify_candidates(question, route, candidates, budget)
         return verify_answer(question, route, first_answer, second_answer, budget)
 
     return first_answer or second_answer
@@ -211,4 +259,3 @@ def invoke_agent(question: str) -> str:
         return fallback_retry(question, route, answer, budget) or answer
 
     return answer
-
