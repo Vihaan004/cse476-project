@@ -20,6 +20,21 @@ PROMPTS = {
         "Do not write reasoning or explanation. "
         "Answer with only yes or no."
     ),
+    "coding": (
+        "You are an expert Python developer. "
+        "Return only the requested self-contained code body. "
+        "Do not include markdown, comments outside the code, or explanation."
+    ),
+    "planning": (
+        "Generate a valid plan for the final planning problem. "
+        "Return only the action list in the required parenthesized format. "
+        "Do not include explanation."
+    ),
+    "future_prediction": (
+        "Make the requested prediction. "
+        "Preserve the exact required final format, especially boxed answers. "
+        "Do not refuse or explain."
+    ),
     "general": (
         "Think privately before answering. "
         "Do not show reasoning or explanation. "
@@ -62,7 +77,7 @@ def verify_answer(question: str, route: str, first: str, second: str, budget: Ca
         budget,
         temperature=0.0,
     )
-    return normalize_answer(raw, question) or first
+    return normalize_answer(raw, question, route) or first
 
 
 def self_consistency(question: str, route: str, budget: CallCounter) -> str:
@@ -71,14 +86,14 @@ def self_consistency(question: str, route: str, budget: CallCounter) -> str:
         budget,
         temperature=0.0,
     )
-    first_answer = normalize_answer(first_raw, question)
+    first_answer = normalize_answer(first_raw, question, route)
 
     second_raw = budgeted_call(
         hidden_cot_prompt(question, route, "independent check"),
         budget,
         temperature=0.2,
     )
-    second_answer = normalize_answer(second_raw, question)
+    second_answer = normalize_answer(second_raw, question, route)
 
     if first_answer and first_answer == second_answer:
         return first_answer

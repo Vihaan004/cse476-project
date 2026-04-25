@@ -23,7 +23,7 @@ def call_model(
     - Numeric → return only the number (no units, no $)
     - Yes/No → return "yes" or "no" '''.strip(),
     temperature: float = 0.0,
-    max_tokens: int = 256,
+    max_tokens: int = 1024,
     timeout: int = 60,
 ) -> str:
     if not API_KEY:
