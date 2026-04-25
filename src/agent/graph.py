@@ -28,7 +28,6 @@ PROMPTS = {
 }
 
 
-
 def hidden_cot_prompt(question: str, route: str, attempt: str = "initial") -> str:
     instruction = PROMPTS.get(route, PROMPTS["general"])
     return f"""
@@ -42,6 +41,28 @@ def budgeted_call(prompt: str, budget: CallCounter, **kwargs) -> str | None:
         return None
 
     return call_model(prompt, **kwargs)
+
+def verifier_prompt(question: str, route: str, first: str, second: str) -> str:
+    instruction = PROMPTS.get(route, PROMPTS["general"])
+    return f"""
+    {instruction}
+    Check both candidate answers against the question. 
+    Choose the candidate that is more likely correct.
+    Do not solve from scratch unless needed.
+
+
+    Question:{question}
+    Candidate A:{first}
+    Candidate B:{second}""".strip()
+
+
+def verify_answer(question: str, route: str, first: str, second: str, budget: CallCounter,) -> str:
+    raw = budgeted_call(
+        verifier_prompt(question, route, first, second),
+        budget,
+        temperature=0.0,
+    )
+    return normalize_answer(raw, question) or first
 
 
 def self_consistency(question: str, route: str, budget: CallCounter) -> str:
@@ -61,6 +82,9 @@ def self_consistency(question: str, route: str, budget: CallCounter) -> str:
 
     if first_answer and first_answer == second_answer:
         return first_answer
+    
+    if first_answer and second_answer:
+        return verify_answer(question, route, first_answer, second_answer, budget)
 
     return first_answer or second_answer
 
