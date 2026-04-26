@@ -7,6 +7,8 @@ data/input/smoke.json
 data/input/dev.json
 data/output/
 
+agent.log
+
 # cache
 __pycache__/
 *.pyc

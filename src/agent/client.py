@@ -3,6 +3,7 @@ import time
 
 import requests
 from dotenv import load_dotenv
+from agent import agent_logger
 
 load_dotenv(override=True)
 
@@ -79,6 +80,7 @@ def call_model(
     attempt = 0
     while attempt < MAX_RETRIES:
         try:
+            agent_logger.log_input(system, prompt)
             if BACKEND == "ollama":
                 response = _call_model_ollama(prompt, system, temperature)
             else:
@@ -87,14 +89,17 @@ def call_model(
             if response.status_code == 200:
                 data = response.json()
                 content = data["choices"][0]["message"]["content"].strip()
+                agent_logger.log_output(content)
                 return content
             
             error = RuntimeError(f"API error {response.status_code}: {response.text}")
+            agent_logger.log_error(f"[HTTP {response.status_code}] {response.text}")
             if response.status_code not in (500, 502, 503, 504):
                 raise error
             print(f"Retryable error (attempt {attempt + 1}): {error}", flush=True)
 
         except requests.RequestException as e:
+            agent_logger.log_error(f"Request exception: {e}")
             print(f"Request error (attempt {attempt + 1}): {e}", flush=True)
 
         attempt += 1
