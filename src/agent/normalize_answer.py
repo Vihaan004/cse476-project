@@ -64,4 +64,14 @@ def normalize_answer(answer: str, question: str = "", route: str = "general") ->
             return m.group(1)
         return text.strip(" .")
 
+    if route == "common_sense":
+        return text.strip(" .\"'`")
+    if route == "boolean":
+        low = text.lower()
+        if "true" in low or low.startswith("yes"):
+            return "True"
+        if "false" in low or low.startswith("no"):
+            return "False"
+        return text.strip(" .")
+
     return text.strip(" .")

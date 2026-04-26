@@ -57,6 +57,19 @@ PROMPTS = {
         "Do not show reasoning or explanation. "
         "Return only the final answer."
     ),
+    "common_sense": (
+        "Answer with the exact short factual answer only. "
+        "Do not use prefixes like 'The answer is', or any explanation. "
+        "Return only the entity, name, place, year, or short phrase. "
+        "Do not add quotes, articles you didn't see. "
+        "If the question lists options, return the chosen option exactly as written. "
+        "Output one line, nothing else."
+    ),
+    "boolean": (
+        "Answer the yes/no question. "
+        "Return exactly one word: True or False. "
+        "Do not include reasoning, punctuation, or explanation."
+    ),
 }
 
 
@@ -188,9 +201,13 @@ def is_malformed(answer: str, route: str) -> bool:
         return True
     if route == "yes_no" and low not in {"yes", "no"}:
         return True
+    if route == "boolean" and low not in {"true", "false"}:
+        return True
     if route == "future_prediction" and "\\boxed{" not in text:
         return True
     if route in {"coding", "planning"} and len(text) < 10:
+        return True
+    if route == "common_sense" and (len(text) > 200 or "\n" in text):
         return True
     return False
 
@@ -253,7 +270,7 @@ def invoke_agent(question: str) -> str:
             return tool_answer
         answer = self_consistency(question, route, budget)
 
-    elif route in {"coding", "planning", "future_prediction", "general"}:
+    elif route in {"coding", "planning", "future_prediction", "general", "common_sense", "boolean"}:
         answer = single_pass(question, route, budget)
 
     else:
