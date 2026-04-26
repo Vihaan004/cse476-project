@@ -263,3 +263,12 @@ def invoke_agent(question: str) -> str:
         return fallback_retry(question, route, answer, budget) or answer
 
     return answer
+
+if __name__ == "__main__":
+    while True:
+        q = input("Enter a question (or 'exit'): ")
+        if q.lower() == "exit":
+            break
+        a = invoke_agent(q)
+        print(f"AI: {a}\n")
+
