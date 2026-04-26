@@ -17,10 +17,24 @@ def normalize_answer(answer: str, question: str = "", route: str = "general") ->
         return text.strip()
 
     if route == "future_prediction":
-        boxed = re.search(r"\\boxed\{.*?\}", text)
+        boxed = re.search(r"\\boxed\{(.*?)\}", text)
         if boxed:
-            return boxed.group(0)
+            value = boxed.group(1).strip()
+
+            # list -like
+            if value.startswith("[") and value.endswith("]"):
+                return value
+
+            # Numeric  prediction
+            if re.fullmatch(r"[-+]?\d+(?:\.\d+)?", value):
+                return f"[{value}]"
+
+            parts = [part.strip() for part in value.split(",")]
+            quoted = ", ".join(f"'{part}'" for part in parts if part)
+            return f"[{quoted}]"
+
         return text.strip()
+
 
     # only short-answer routes use last-line cleanup
     lines = [line.strip() for line in text.splitlines() if line.strip()]
