@@ -14,6 +14,7 @@ def call_model(
     prompt: str,
     system: str = "You are a precise problem solver.",
     temperature: float = 0.0,
+    timeout: int = 60,
 ) -> str:
     if not API_KEY:
         raise RuntimeError("Missing API key. Set OPENAI_API_KEY or LLM_API_KEY.")
@@ -34,13 +35,10 @@ def call_model(
         "temperature": temperature,
     }
 
-    response = requests.post(url, headers=headers, json=payload)
+    response = requests.post(url, headers=headers, json=payload, timeout=timeout)
 
     if response.status_code != 200:
         raise RuntimeError(f"API error {response.status_code}: {response.text}")
 
     data = response.json()
-    # DEBUG
-    print(f"========== API CALL ==========\nINPUT: {prompt}\n\nOUTPUT: {data}\n")
-
     return data["choices"][0]["message"]["content"].strip()
