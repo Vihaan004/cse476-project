@@ -16,8 +16,8 @@ from langchain.messages import AIMessage, AnyMessage, HumanMessage, SystemMessag
 from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode
 
-from agent.tools import calculator, python_exec
-_tools = [calculator]
+from agent.tools import calculator, web_search
+_tools = [calculator, web_search]
 
 # ==================== setup environment and model ====================
 ROOT = Path(__file__).resolve().parents[2]

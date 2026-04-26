@@ -1,6 +1,9 @@
 # environment
 .env
 .venv
+venv
+
+.claude
 
 # data
 data/input/smoke.json

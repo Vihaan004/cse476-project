@@ -37,9 +37,9 @@ def load_questions(path: Path) -> List[Dict[str, Any]]:
 
 def build_answers(questions: List[Dict[str, Any]]) -> List[Dict[str, str]]:
     answers = []
-    limit = 5  # Temporary hardcoded limit
-    for idx, question in enumerate(questions[:limit], start=1):
+    for idx, question in enumerate(questions, start=1):
         # Example: assume you have an agent loop that produces an answer string.
+        print(f"\n\n====================\nQUESTION {idx}\n====================\n")
         real_answer = invoke_agent(question["input"])
         answers.append({"output": real_answer})
         # placeholder_answer = f"Placeholder answer for question {idx}"
