@@ -12,19 +12,9 @@ MODEL_NAME = os.getenv("MODEL_NAME", "qwen3-30b-a3b-instruct-2507")
 
 def call_model(
     prompt: str,
-    system = '''
-    You are a precise problem solver.
-
-    Return ONLY the final answer.
-    Do NOT include explanations or extra text.
-
-    Rules:
-    - Multiple choice → return only the answer text
-    - Numeric → return only the number (no units, no $)
-    - Yes/No → return "yes" or "no" '''.strip(),
+    system: str = "You are a precise problem solver.",
     temperature: float = 0.0,
-    max_tokens: int = 1024,
-    timeout: int = 180,
+    timeout: int = 60,
 ) -> str:
     if not API_KEY:
         raise RuntimeError("Missing API key. Set OPENAI_API_KEY or LLM_API_KEY.")
@@ -43,7 +33,6 @@ def call_model(
             {"role": "user", "content": prompt},
         ],
         "temperature": temperature,
-        "max_tokens": max_tokens,
     }
 
     response = requests.post(url, headers=headers, json=payload, timeout=timeout)

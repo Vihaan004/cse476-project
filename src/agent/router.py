@@ -91,6 +91,12 @@ def route_question(question: str) -> str:
 
     if "predict future events" in q or "\\boxed" in q:
         return "future_prediction"
+    
+    if "context:" in q or "facts:" in q or "[doc]" in q or "[par]" in q:
+        return "context_qa"
+
+    if len(question) > 700 and q.startswith(("who", "what", "which", "where", "when", "how")):
+        return "context_qa"
 
     if any(marker in q for marker in MATH_LATEX):
         return "math"
