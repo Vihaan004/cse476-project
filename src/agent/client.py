@@ -40,4 +40,7 @@ def call_model(
         raise RuntimeError(f"API error {response.status_code}: {response.text}")
 
     data = response.json()
+    # DEBUG
+    print(f"========== API CALL ==========\nINPUT: {prompt}\n\nOUTPUT: {data}\n")
+
     return data["choices"][0]["message"]["content"].strip()
