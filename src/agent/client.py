@@ -24,7 +24,7 @@ def call_model(
     - Yes/No → return "yes" or "no" '''.strip(),
     temperature: float = 0.0,
     max_tokens: int = 1024,
-    timeout: int = 60,
+    timeout: int = 180,
 ) -> str:
     if not API_KEY:
         raise RuntimeError("Missing API key. Set OPENAI_API_KEY or LLM_API_KEY.")
